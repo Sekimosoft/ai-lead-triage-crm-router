@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: ai-lead-triage-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: AI_PROVIDER
+        value: mock
+      - key: CORS_ORIGINS
+        sync: false
+      - key: PYTHON_VERSION
+        value: "3.12"
+
+  - type: web
+    name: ai-lead-triage-web
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    plan: free
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
