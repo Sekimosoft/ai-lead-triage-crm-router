@@ -3,6 +3,11 @@ from httpx import ASGITransport, AsyncClient
 
 from app.main import app
 
+SAMPLE_JA = (
+    "当社は従業員25名の会計事務所です。月300件ほどの問い合わせを担当者が手作業で振り分けています。"
+    "この業務を自動化したいのですが、概算費用を相談できますか？"
+)
+
 
 @pytest.fixture
 def anyio_backend():
@@ -41,6 +46,33 @@ async def test_analyze_success(client):
 
 
 @pytest.mark.asyncio
+async def test_analyze_japanese_mock(client):
+    response = await client.post(
+        "/api/v1/analyze",
+        json={"inquiryText": SAMPLE_JA, "locale": "ja"},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    result = data["result"]
+    assert result["category"] == "pricing"
+    assert "営業日" in result["recommendedAction"] or "見積" in result["recommendedAction"]
+    assert "ありがとう" in result["suggestedReply"]
+    assert result["companySize"] == "small"
+
+
+@pytest.mark.asyncio
+async def test_analyze_defaults_to_english(client):
+    inquiry = (
+        "Hello, we are from Acme Corp, a growing team of 50 employees. "
+        "We would like a product demo and pricing details this week."
+    )
+    response = await client.post("/api/v1/analyze", json={"inquiryText": inquiry})
+    data = response.json()
+    assert "Thank you" in data["result"]["suggestedReply"]
+
+
+@pytest.mark.asyncio
 async def test_analyze_rejects_short_input(client):
     response = await client.post("/api/v1/analyze", json={"inquiryText": "Too short"})
     assert response.status_code == 200
@@ -48,6 +80,17 @@ async def test_analyze_rejects_short_input(client):
     assert data["success"] is False
     assert data["result"] is None
     assert any(issue["field"] == "inquiryText" for issue in data["validationIssues"])
+
+
+@pytest.mark.asyncio
+async def test_analyze_rejects_short_input_japanese_message(client):
+    response = await client.post(
+        "/api/v1/analyze",
+        json={"inquiryText": "短い", "locale": "ja"},
+    )
+    data = response.json()
+    assert data["success"] is False
+    assert any("文字" in issue["message"] for issue in data["validationIssues"])
 
 
 @pytest.mark.asyncio

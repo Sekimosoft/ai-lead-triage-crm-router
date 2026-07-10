@@ -4,9 +4,9 @@
 
 A portfolio demo by [Sekimosoft](https://sekimosoft.com) from the BizDXAI platform.
 
-**Status:** v1.0.0 — Public on GitHub, CI green; Live Demo deployment pending  
+**Status:** v1.1.0 — Public on GitHub, CI green, EN / JP UI; Live Demo deployment pending  
 **Repository:** https://github.com/Sekimosoft/ai-lead-triage-crm-router  
-**Mock Provider:** Default — no API key required for demo
+**Languages:** EN / JP toggle (default EN) — Mock Provider, no API key required
 
 Copyright © Sekimosoft. No license is granted for reuse.
 
@@ -63,11 +63,13 @@ Open http://localhost:3000
 
 ## 4. Screenshots
 
-Sample inquiry only — no real customer data.
+Sample inquiry only — no real customer data. Toggle **EN / JP** in the header (default EN).
 
-| Inquiry input | Structured result |
+| English | Japanese |
 |---|---|
-| ![Inquiry input](./docs/screenshots/screenshot-inquiry.png) | ![Structured result](./docs/screenshots/screenshot-result.png) |
+| ![English UI](./docs/screenshots/screenshot-en.png) | ![Japanese UI](./docs/screenshots/screenshot-ja.png) |
+
+Full-resolution captures (input + result): [docs/assets/](./docs/assets/)
 
 ---
 
@@ -124,6 +126,7 @@ flowchart LR
 | Decision | Rationale |
 |---|---|
 | Mock provider as default | Portfolio demo works without API keys or cost |
+| EN / JP UI toggle | Direct sales value in overseas and Japanese markets without a full i18n platform |
 | Provider interface | Swap to OpenAI (or others) via one env variable |
 | Validation after AI | AI interprets; code decides if output is safe to route |
 | Webhook payload as first-class output | CRM integrations often start with HTTP hooks, not DB sync |
@@ -219,8 +222,8 @@ npm run build
 
 | Suite | Status |
 |---|---|
-| Backend pytest (9 tests) | Pass — local and CI |
-| Frontend vitest (3 tests) | Pass — local and CI |
+| Backend pytest (16 tests) | Pass — local and CI |
+| Frontend vitest (7 tests) | Pass — local and CI |
 | ESLint | Pass — local and CI |
 | Production build | Pass — CI (Ubuntu); on Windows, `next build` may fail on mapped drives (`K:`) due to a Next.js/readlink environment issue — not a project code defect |
 

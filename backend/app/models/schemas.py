@@ -3,6 +3,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field, HttpUrl
 
+Locale = Literal["en", "ja"]
+
 
 class CompanySize(str, Enum):
     STARTUP = "startup"
@@ -49,6 +51,7 @@ class LeadTriageResult(BaseModel):
 
 class AnalyzeRequest(BaseModel):
     inquiryText: str = Field(..., min_length=1)
+    locale: Locale = "en"
 
 
 class ValidationIssue(BaseModel):
@@ -74,6 +77,7 @@ class WebhookPayload(BaseModel):
 class WebhookRequest(BaseModel):
     url: HttpUrl
     payload: WebhookPayload
+    locale: Locale = "en"
 
 
 class WebhookResponse(BaseModel):

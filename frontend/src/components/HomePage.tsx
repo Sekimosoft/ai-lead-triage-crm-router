@@ -3,10 +3,15 @@
 import { useState } from "react";
 import { InquiryForm } from "@/components/InquiryForm";
 import { TriageResultPanel } from "@/components/TriageResultPanel";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { useLocale } from "@/lib/locale-context";
+import { getMessages } from "@/lib/i18n";
 import type { AnalyzeResponse } from "@/types";
 import { colors, layout } from "@/lib/theme";
 
 export function HomePage() {
+  const { locale } = useLocale();
+  const t = getMessages(locale);
   const [response, setResponse] = useState<AnalyzeResponse | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -15,21 +20,39 @@ export function HomePage() {
     <main style={layout.page}>
       <div style={layout.container}>
         <header style={{ marginBottom: "2rem" }}>
-          <p style={{ color: colors.accent, fontWeight: 600, margin: "0 0 0.5rem", fontSize: "0.875rem" }}>
-            Sekimosoft · Portfolio Demo
-          </p>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: "1rem",
+              flexWrap: "wrap",
+              marginBottom: "0.5rem",
+            }}
+          >
+            <p
+              style={{
+                color: colors.accent,
+                fontWeight: 600,
+                margin: 0,
+                fontSize: "0.875rem",
+              }}
+            >
+              {t.brand}
+            </p>
+            <LanguageToggle />
+          </div>
           <h1 style={{ margin: "0 0 0.75rem", fontSize: "clamp(1.75rem, 4vw, 2.25rem)" }}>
-            AI Lead Triage CRM Router
+            {t.title}
           </h1>
           <p style={{ color: colors.muted, margin: 0, maxWidth: 640, lineHeight: 1.6 }}>
-            Turn messy inbound inquiries into structured sales-ready data — company, priority,
-            recommended action, and a draft reply — in seconds.
+            {t.description}
           </p>
         </header>
 
         <div style={{ display: "grid", gap: "1.5rem" }}>
           <section style={layout.card}>
-            <h2 style={{ margin: "0 0 1rem", fontSize: "1.125rem" }}>1. Paste inquiry</h2>
+            <h2 style={{ margin: "0 0 1rem", fontSize: "1.125rem" }}>{t.sectionPasteInquiry}</h2>
             <InquiryForm
               onResult={setResponse}
               onError={setError}
@@ -37,7 +60,7 @@ export function HomePage() {
             />
             {loading && (
               <p style={{ color: colors.muted, marginTop: "1rem", marginBottom: 0 }}>
-                Analyzing…
+                {t.analyzing}
               </p>
             )}
             {error && (
@@ -53,7 +76,7 @@ export function HomePage() {
         </div>
 
         <footer style={{ marginTop: "2.5rem", color: colors.muted, fontSize: "0.875rem" }}>
-          Demo only — use fictional inquiries. Built by Sekimosoft as part of the BizDXAI platform portfolio.
+          {t.footer}
         </footer>
       </div>
     </main>

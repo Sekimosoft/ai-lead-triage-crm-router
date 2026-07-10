@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import { sendWebhook, ApiError } from "@/lib/api";
+import { useLocale } from "@/lib/locale-context";
+import { formatMessage, getMessages, labelEnum } from "@/lib/i18n";
 import type { AnalyzeResponse } from "@/types";
 import { colors } from "@/lib/theme";
 
@@ -15,11 +17,17 @@ function badgeColor(value: string): string {
     high: colors.warning,
     medium: colors.accent,
     low: colors.muted,
+    緊急: colors.danger,
+    高: colors.warning,
+    中: colors.accent,
+    低: colors.muted,
   };
   return map[value] ?? colors.muted;
 }
 
 export function TriageResultPanel({ response }: TriageResultProps) {
+  const { locale } = useLocale();
+  const t = getMessages(locale);
   const [webhookUrl, setWebhookUrl] = useState("");
   const [copyStatus, setCopyStatus] = useState<string | null>(null);
   const [webhookStatus, setWebhookStatus] = useState<string | null>(null);
@@ -33,10 +41,10 @@ export function TriageResultPanel({ response }: TriageResultProps) {
     if (!jsonPayload) return;
     try {
       await navigator.clipboard.writeText(jsonPayload);
-      setCopyStatus("Copied to clipboard");
+      setCopyStatus(t.copied);
       setTimeout(() => setCopyStatus(null), 2000);
     } catch {
-      setCopyStatus("Copy failed — select JSON manually");
+      setCopyStatus(t.copyFailed);
     }
   }
 
@@ -47,11 +55,10 @@ export function TriageResultPanel({ response }: TriageResultProps) {
     setWebhookStatus(null);
 
     try {
-      const result = await sendWebhook(webhookUrl.trim(), response.webhookPayload);
+      const result = await sendWebhook(webhookUrl.trim(), response.webhookPayload, locale);
       setWebhookStatus(result.message);
     } catch (err) {
-      const message =
-        err instanceof ApiError ? err.message : "Webhook delivery failed.";
+      const message = err instanceof ApiError ? err.message : t.errWebhookFailed;
       setWebhookStatus(message);
     } finally {
       setWebhookLoading(false);
@@ -61,7 +68,7 @@ export function TriageResultPanel({ response }: TriageResultProps) {
   if (!response.success || !response.result) {
     return (
       <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-        <h2 style={{ margin: 0, fontSize: "1.125rem" }}>Validation issues</h2>
+        <h2 style={{ margin: 0, fontSize: "1.125rem" }}>{t.validationIssues}</h2>
         <ul style={{ margin: 0, paddingLeft: "1.25rem", color: colors.warning }}>
           {response.validationIssues.map((issue) => (
             <li key={`${issue.field}-${issue.message}`}>
@@ -70,28 +77,42 @@ export function TriageResultPanel({ response }: TriageResultProps) {
           ))}
         </ul>
         <p style={{ color: colors.muted, margin: 0, fontSize: "0.875rem" }}>
-          Provider: {response.provider}
+          {t.provider}: {response.provider}
         </p>
       </div>
     );
   }
 
   const { result } = response;
-  const fields: { label: string; value: string | number }[] = [
-    { label: "Company", value: result.company },
-    { label: "Company size", value: result.companySize },
-    { label: "Category", value: result.category },
-    { label: "Priority", value: result.priority },
-    { label: "Sales potential", value: result.salesPotential },
-    { label: "Confidence", value: `${Math.round(result.confidence * 100)}%` },
+  const fields: { label: string; value: string; highlight?: boolean }[] = [
+    { label: t.company, value: result.company },
+    {
+      label: t.companySize,
+      value: labelEnum(locale, "companySize", result.companySize),
+    },
+    {
+      label: t.category,
+      value: labelEnum(locale, "category", result.category),
+    },
+    {
+      label: t.priority,
+      value: labelEnum(locale, "priority", result.priority),
+      highlight: true,
+    },
+    {
+      label: t.salesPotential,
+      value: labelEnum(locale, "salesPotential", result.salesPotential),
+      highlight: true,
+    },
+    { label: t.confidence, value: `${Math.round(result.confidence * 100)}%` },
   ];
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h2 style={{ margin: 0, fontSize: "1.125rem" }}>Structured output</h2>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
+        <h2 style={{ margin: 0, fontSize: "1.125rem" }}>{t.structuredOutput}</h2>
         <span style={{ color: colors.muted, fontSize: "0.875rem" }}>
-          via {response.provider} provider
+          {formatMessage(t.viaProvider, { provider: response.provider })}
         </span>
       </div>
 
@@ -118,11 +139,8 @@ export function TriageResultPanel({ response }: TriageResultProps) {
             <div
               style={{
                 fontWeight: 600,
-                color:
-                  field.label === "Priority" || field.label === "Sales potential"
-                    ? badgeColor(String(field.value))
-                    : colors.text,
-                textTransform: "capitalize",
+                color: field.highlight ? badgeColor(field.value) : colors.text,
+                textTransform: locale === "en" && field.highlight ? "capitalize" : "none",
               }}
             >
               {field.value}
@@ -131,15 +149,15 @@ export function TriageResultPanel({ response }: TriageResultProps) {
         ))}
       </div>
 
-      <Section title="Request summary" body={result.requestSummary} />
-      <Section title="Recommended action" body={result.recommendedAction} />
-      <Section title="Suggested reply" body={result.suggestedReply} mono />
+      <Section title={t.requestSummary} body={result.requestSummary} />
+      <Section title={t.recommendedAction} body={result.recommendedAction} />
+      <Section title={t.suggestedReply} body={result.suggestedReply} mono />
 
       <div>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h3 style={{ margin: "0 0 0.5rem", fontSize: "1rem" }}>Webhook JSON</h3>
+          <h3 style={{ margin: "0 0 0.5rem", fontSize: "1rem" }}>{t.webhookJson}</h3>
           <button type="button" onClick={handleCopy} style={buttonStyle}>
-            Copy JSON
+            {t.copyJson}
           </button>
         </div>
         {copyStatus && (
@@ -151,13 +169,13 @@ export function TriageResultPanel({ response }: TriageResultProps) {
       </div>
 
       <div>
-        <h3 style={{ margin: "0 0 0.5rem", fontSize: "1rem" }}>Send to webhook</h3>
+        <h3 style={{ margin: "0 0 0.5rem", fontSize: "1rem" }}>{t.sendWebhook}</h3>
         <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
           <input
             type="url"
             value={webhookUrl}
             onChange={(e) => setWebhookUrl(e.target.value)}
-            placeholder="https://your-crm-or-automation-endpoint"
+            placeholder={t.webhookPlaceholder}
             style={inputStyle}
           />
           <button
@@ -169,7 +187,7 @@ export function TriageResultPanel({ response }: TriageResultProps) {
               opacity: webhookLoading || !webhookUrl.trim() ? 0.6 : 1,
             }}
           >
-            {webhookLoading ? "Sending…" : "Send webhook"}
+            {webhookLoading ? t.sending : t.sendWebhookButton}
           </button>
         </div>
         {webhookStatus && (

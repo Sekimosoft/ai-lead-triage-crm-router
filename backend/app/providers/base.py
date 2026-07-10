@@ -12,5 +12,5 @@ class AIProvider(ABC):
         pass
 
     @abstractmethod
-    async def analyze(self, inquiry_text: str) -> LeadTriageResult:
+    async def analyze(self, inquiry_text: str, locale: str = "en") -> LeadTriageResult:
         pass

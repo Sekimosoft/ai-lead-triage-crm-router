@@ -22,7 +22,8 @@ class TriageService:
         self._settings = settings
 
     async def analyze(self, request: AnalyzeRequest) -> AnalyzeResponse:
-        input_issues = validate_inquiry_input(request.inquiryText, self._settings)
+        locale = request.locale
+        input_issues = validate_inquiry_input(request.inquiryText, self._settings, locale)
         if input_issues:
             return AnalyzeResponse(
                 success=False,
@@ -31,20 +32,22 @@ class TriageService:
             )
 
         try:
-            result = await self._provider.analyze(request.inquiryText.strip())
+            result = await self._provider.analyze(request.inquiryText.strip(), locale)
         except Exception as exc:
+            fail_msg = (
+                f"AI analysis failed: {exc}"
+                if locale == "en"
+                else f"AI解析に失敗しました: {exc}"
+            )
             return AnalyzeResponse(
                 success=False,
                 validationIssues=[
-                    ValidationIssue(
-                        field="provider",
-                        message=f"AI analysis failed: {exc}",
-                    )
+                    ValidationIssue(field="provider", message=fail_msg)
                 ],
                 provider=self._provider.name,
             )
 
-        output_issues = validate_triage_result(result)
+        output_issues = validate_triage_result(result, locale)
         webhook_payload = self.build_webhook_payload(result)
 
         return AnalyzeResponse(
@@ -71,6 +74,7 @@ class WebhookService:
         self._settings = settings
 
     async def send(self, request: WebhookRequest) -> WebhookResponse:
+        locale = request.locale
         try:
             async with httpx.AsyncClient(timeout=self._settings.webhook_timeout_seconds) as client:
                 response = await client.post(
@@ -81,23 +85,26 @@ class WebhookService:
         except httpx.TimeoutException:
             return WebhookResponse(
                 success=False,
-                message="Webhook request timed out.",
+                message="Webhook request timed out."
+                if locale == "en"
+                else "Webhookのリクエストがタイムアウトしました。",
             )
         except httpx.RequestError as exc:
-            return WebhookResponse(
-                success=False,
-                message=f"Webhook request failed: {exc}",
-            )
+            prefix = "Webhook request failed:" if locale == "en" else "Webhookの送信に失敗しました:"
+            return WebhookResponse(success=False, message=f"{prefix} {exc}")
 
         if response.is_success:
             return WebhookResponse(
                 success=True,
                 statusCode=response.status_code,
-                message="Webhook delivered successfully.",
+                message="Webhook delivered successfully."
+                if locale == "en"
+                else "Webhookの送信に成功しました。",
             )
 
+        prefix = "Webhook returned status" if locale == "en" else "Webhookがステータス"
         return WebhookResponse(
             success=False,
             statusCode=response.status_code,
-            message=f"Webhook returned status {response.status_code}.",
+            message=f"{prefix} {response.status_code}.",
         )
