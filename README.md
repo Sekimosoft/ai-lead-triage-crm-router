@@ -4,7 +4,8 @@
 
 A portfolio demo by [Sekimosoft](https://sekimosoft.com) from the BizDXAI platform.
 
-**Status:** v1.0.0 — Development (awaiting Live Demo deployment)  
+**Status:** v1.0.0 — Public on GitHub, CI green; Live Demo deployment pending  
+**Repository:** https://github.com/Sekimosoft/ai-lead-triage-crm-router  
 **Mock Provider:** Default — no API key required for demo
 
 Copyright © Sekimosoft. No license is granted for reuse.
@@ -218,10 +219,10 @@ npm run build
 
 | Suite | Status |
 |---|---|
-| Backend pytest (9 tests) | Pass locally |
-| Frontend vitest (3 tests) | Pass locally |
-| ESLint | Pass locally |
-| Production build | Pass on Ubuntu (CI); on Windows, `next build` may fail on mapped drives (`K:`) due to a Next.js/readlink environment issue — not a project code defect |
+| Backend pytest (9 tests) | Pass — local and CI |
+| Frontend vitest (3 tests) | Pass — local and CI |
+| ESLint | Pass — local and CI |
+| Production build | Pass — CI (Ubuntu); on Windows, `next build` may fail on mapped drives (`K:`) due to a Next.js/readlink environment issue — not a project code defect |
 
 ---
 
