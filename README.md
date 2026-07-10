@@ -4,7 +4,7 @@
 
 A portfolio demo by [Sekimosoft](https://sekimosoft.com) from the BizDXAI platform.
 
-**Status:** v1.1.0 — Public on GitHub, CI green, EN / JP UI; Live Demo deployment pending  
+**Status:** v1.1.1 — Public on GitHub, CI green, EN / JP UI; Live Demo on Render  
 **Repository:** https://github.com/Sekimosoft/ai-lead-triage-crm-router  
 **Languages:** EN / JP toggle (default EN) — Mock Provider, no API key required
 
