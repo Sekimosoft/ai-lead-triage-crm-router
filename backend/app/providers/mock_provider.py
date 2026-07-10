@@ -47,18 +47,19 @@ class MockProvider(AIProvider):
     def _extract_company(self, text: str, is_ja: bool) -> str | None:
         if is_ja:
             entity = r"(?:株式会社|有限会社|合同会社)"
+            name_chars = r"[^\s。、の]{1,40}"
             patterns = [
                 # Suffix form: 神戸物産株式会社, 〇〇有限会社
-                rf"([\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFFA-Za-z0-9&・]{{1,40}}{entity})",
+                rf"({name_chars}{entity})",
                 # Prefix form: 株式会社神戸物産
-                rf"({entity}[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFFA-Za-z0-9&・]{{1,40}})",
-                r"当社は従業員\d+名の([^。、\s]{2,30})",
+                rf"({entity}{name_chars})",
+                r"当社は従業員\d+名の([^。、\sの]{2,30})",
                 r"(?:会社名|企業名)[:：]?\s*([^\s。、]{2,40})",
             ]
             for pattern in patterns:
                 match = re.search(pattern, text)
                 if match:
-                    return match.group(1).strip(" .、")
+                    return self._clean_company_name(match.group(1))
             if "会計事務所" in text:
                 return "会計事務所"
             return None
@@ -72,6 +73,13 @@ class MockProvider(AIProvider):
             if match:
                 return match.group(1).strip(" .,")
         return None
+
+    def _clean_company_name(self, name: str) -> str:
+        cleaned = name.strip(" .、")
+        for trailing in ("です", "の担当"):
+            if cleaned.endswith(trailing):
+                cleaned = cleaned[: -len(trailing)]
+        return cleaned.rstrip("の")
 
     def _infer_company_size(self, lower: str, text: str) -> CompanySize:
         if re.search(r"25名|２５名", text):

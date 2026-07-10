@@ -130,7 +130,7 @@ def test_validate_triage_rejects_unknown_company():
         priority=Priority.MEDIUM,
         salesPotential=SalesPotential.MEDIUM,
         recommendedAction="個別メールで返信し、CRMに登録してください。",
-        suggestedReply="お問い合わせありがとうございます。",
+        suggestedReply="お問い合わせありがとうございます。担当より折り返しご連絡いたします。",
         confidence=0.8,
     )
     issues = validate_triage_result(result, locale="ja")
