@@ -4,8 +4,9 @@ from httpx import ASGITransport, AsyncClient
 from app.main import app
 
 SAMPLE_JA = (
-    "当社は従業員25名の会計事務所です。月300件ほどの問い合わせを担当者が手作業で振り分けています。"
-    "この業務を自動化したいのですが、概算費用を相談できますか？"
+    "お世話になります。神戸物産株式会社の明智光秀と申します。"
+    "テストデータを解析したのですが、どちらの部署に確認依頼を出せばよいでしょうか。"
+    "ご確認のほど、よろしくお願いします。"
 )
 
 
@@ -55,10 +56,22 @@ async def test_analyze_japanese_mock(client):
     data = response.json()
     assert data["success"] is True
     result = data["result"]
-    assert result["category"] == "pricing"
-    assert "営業日" in result["recommendedAction"] or "見積" in result["recommendedAction"]
+    assert result["company"] == "神戸物産株式会社"
+    assert not any(issue["field"] == "company" for issue in data["validationIssues"])
     assert "ありがとう" in result["suggestedReply"]
-    assert result["companySize"] == "small"
+
+
+@pytest.mark.asyncio
+async def test_analyze_english_official_sample(client):
+    inquiry = (
+        "Hello, we are from Northwind Analytics, a mid-size team of about 50 employees. "
+        "We are evaluating CRM tools and would like a product demo plus pricing for 80 seats this week."
+    )
+    response = await client.post("/api/v1/analyze", json={"inquiryText": inquiry, "locale": "en"})
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert "Northwind" in data["result"]["company"]
 
 
 @pytest.mark.asyncio

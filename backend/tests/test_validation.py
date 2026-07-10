@@ -6,6 +6,12 @@ from app.providers.mock_provider import MockProvider
 from app.validation.rules import validate_inquiry_input, validate_triage_result
 
 SAMPLE_JA = (
+    "お世話になります。神戸物産株式会社の明智光秀と申します。"
+    "テストデータを解析したのですが、どちらの部署に確認依頼を出せばよいでしょうか。"
+    "ご確認のほど、よろしくお願いします。"
+)
+
+SAMPLE_JA_ACCOUNTING = (
     "当社は従業員25名の会計事務所です。月300件ほどの問い合わせを担当者が手作業で振り分けています。"
     "この業務を自動化したいのですが、概算費用を相談できますか？"
 )
@@ -28,12 +34,43 @@ async def test_mock_provider_extracts_company():
 
 
 @pytest.mark.asyncio
+async def test_mock_provider_japanese_official_sample_company():
+    provider = MockProvider()
+    result = await provider.analyze(SAMPLE_JA, locale="ja")
+    assert result.company == "神戸物産株式会社"
+    issues = validate_triage_result(result, locale="ja")
+    assert not any(issue.field == "company" for issue in issues)
+
+
+@pytest.mark.asyncio
+async def test_mock_provider_japanese_entity_forms():
+    provider = MockProvider()
+    cases = [
+        ("株式会社テスト商事の担当です。", "株式会社テスト商事"),
+        ("サンプル有限会社へ連絡です。", "サンプル有限会社"),
+        ("合同会社デモの問い合わせです。", "合同会社デモ"),
+    ]
+    for text, expected in cases:
+        inquiry = f"お世話になっております。{text} ご確認よろしくお願いいたします。"
+        result = await provider.analyze(inquiry, locale="ja")
+        assert result.company == expected
+
+
+@pytest.mark.asyncio
+async def test_mock_provider_japanese_accounting_pattern():
+    provider = MockProvider()
+    result = await provider.analyze(SAMPLE_JA_ACCOUNTING, locale="ja")
+    assert result.company == "会計事務所"
+    assert result.category == Category.PRICING
+
+
+@pytest.mark.asyncio
 async def test_mock_provider_japanese_output():
     provider = MockProvider()
     result = await provider.analyze(SAMPLE_JA, locale="ja")
-    assert result.category == Category.PRICING
+    assert result.category == Category.GENERAL
     assert "ありがとう" in result.suggestedReply
-    assert result.companySize == CompanySize.SMALL
+    assert result.company == "神戸物産株式会社"
     assert len(result.recommendedAction) >= 10
 
 
@@ -82,6 +119,22 @@ def test_validate_triage_low_confidence():
     )
     issues = validate_triage_result(result)
     assert any(issue.field == "confidence" for issue in issues)
+
+
+def test_validate_triage_rejects_unknown_company():
+    result = LeadTriageResult(
+        company="不明な会社",
+        companySize=CompanySize.UNKNOWN,
+        requestSummary="問い合わせ内容の確認をお願いします。",
+        category=Category.GENERAL,
+        priority=Priority.MEDIUM,
+        salesPotential=SalesPotential.MEDIUM,
+        recommendedAction="個別メールで返信し、CRMに登録してください。",
+        suggestedReply="お問い合わせありがとうございます。",
+        confidence=0.8,
+    )
+    issues = validate_triage_result(result, locale="ja")
+    assert any(issue.field == "company" for issue in issues)
 
 
 def test_validate_triage_schema_maintained():

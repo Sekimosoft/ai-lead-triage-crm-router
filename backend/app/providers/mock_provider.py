@@ -46,7 +46,12 @@ class MockProvider(AIProvider):
 
     def _extract_company(self, text: str, is_ja: bool) -> str | None:
         if is_ja:
+            entity = r"(?:株式会社|有限会社|合同会社)"
             patterns = [
+                # Suffix form: 神戸物産株式会社, 〇〇有限会社
+                rf"([\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFFA-Za-z0-9&・]{{1,40}}{entity})",
+                # Prefix form: 株式会社神戸物産
+                rf"({entity}[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FFFA-Za-z0-9&・]{{1,40}})",
                 r"当社は従業員\d+名の([^。、\s]{2,30})",
                 r"(?:会社名|企業名)[:：]?\s*([^\s。、]{2,40})",
             ]

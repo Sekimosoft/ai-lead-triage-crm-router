@@ -126,6 +126,7 @@ flowchart LR
 | Decision | Rationale |
 |---|---|
 | Mock provider as default | Portfolio demo works without API keys or cost |
+| Mock provider scope | Supports representative demo patterns (including common Japanese legal-entity forms). For free-form semantic interpretation, use the OpenAI Provider |
 | EN / JP UI toggle | Direct sales value in overseas and Japanese markets without a full i18n platform |
 | Provider interface | Swap to OpenAI (or others) via one env variable |
 | Validation after AI | AI interprets; code decides if output is safe to route |

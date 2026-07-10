@@ -46,7 +46,7 @@ describe("i18n", () => {
   it("provides locale-specific sample inquiries", () => {
     expect(getSampleInquiry("en")).toBe(SAMPLE_INQUIRY_EN);
     expect(getSampleInquiry("ja")).toBe(SAMPLE_INQUIRY_JA);
-    expect(SAMPLE_INQUIRY_JA).toContain("会計事務所");
+    expect(SAMPLE_INQUIRY_JA).toContain("神戸物産株式会社");
   });
 
   it("validates inquiry messages per locale", () => {
