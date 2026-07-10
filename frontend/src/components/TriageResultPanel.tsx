@@ -5,7 +5,7 @@ import { sendWebhook, ApiError } from "@/lib/api";
 import { useLocale } from "@/lib/locale-context";
 import { formatMessage, getMessages, labelEnum } from "@/lib/i18n";
 import type { AnalyzeResponse } from "@/types";
-import { colors } from "@/lib/theme";
+import { colors, wrapText } from "@/lib/theme";
 
 interface TriageResultProps {
   response: AnalyzeResponse;
@@ -108,10 +108,10 @@ export function TriageResultPanel({ response }: TriageResultProps) {
   ];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem", minWidth: 0, maxWidth: "100%" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "0.5rem" }}>
         <h2 style={{ margin: 0, fontSize: "1.125rem" }}>{t.structuredOutput}</h2>
-        <span style={{ color: colors.muted, fontSize: "0.875rem" }}>
+        <span style={{ color: colors.muted, fontSize: "0.875rem", ...wrapText }}>
           {formatMessage(t.viaProvider, { provider: response.provider })}
         </span>
       </div>
@@ -119,8 +119,10 @@ export function TriageResultPanel({ response }: TriageResultProps) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 140px), 1fr))",
           gap: "0.75rem",
+          minWidth: 0,
+          maxWidth: "100%",
         }}
       >
         {fields.map((field) => (
@@ -131,6 +133,8 @@ export function TriageResultPanel({ response }: TriageResultProps) {
               borderRadius: 8,
               background: colors.surfaceAlt,
               border: `1px solid ${colors.border}`,
+              minWidth: 0,
+              maxWidth: "100%",
             }}
           >
             <div style={{ fontSize: "0.75rem", color: colors.muted, marginBottom: 4 }}>
@@ -141,6 +145,7 @@ export function TriageResultPanel({ response }: TriageResultProps) {
                 fontWeight: 600,
                 color: field.highlight ? badgeColor(field.value) : colors.text,
                 textTransform: locale === "en" && field.highlight ? "capitalize" : "none",
+                ...wrapText,
               }}
             >
               {field.value}
@@ -153,8 +158,16 @@ export function TriageResultPanel({ response }: TriageResultProps) {
       <Section title={t.recommendedAction} body={result.recommendedAction} />
       <Section title={t.suggestedReply} body={result.suggestedReply} mono />
 
-      <div>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ minWidth: 0, maxWidth: "100%" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: "0.5rem",
+          }}
+        >
           <h3 style={{ margin: "0 0 0.5rem", fontSize: "1rem" }}>{t.webhookJson}</h3>
           <button type="button" onClick={handleCopy} style={buttonStyle}>
             {t.copyJson}
@@ -168,9 +181,9 @@ export function TriageResultPanel({ response }: TriageResultProps) {
         <pre style={preStyle}>{jsonPayload}</pre>
       </div>
 
-      <div>
+      <div style={{ minWidth: 0, maxWidth: "100%" }}>
         <h3 style={{ margin: "0 0 0.5rem", fontSize: "1rem" }}>{t.sendWebhook}</h3>
-        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", minWidth: 0 }}>
           <input
             type="url"
             value={webhookUrl}
@@ -210,7 +223,7 @@ function Section({
   mono?: boolean;
 }) {
   return (
-    <div>
+    <div style={{ minWidth: 0, maxWidth: "100%" }}>
       <h3 style={{ margin: "0 0 0.5rem", fontSize: "1rem" }}>{title}</h3>
       <p
         style={{
@@ -220,6 +233,7 @@ function Section({
           whiteSpace: mono ? "pre-wrap" : "normal",
           fontFamily: mono ? "Consolas, monospace" : "inherit",
           fontSize: mono ? "0.9rem" : "1rem",
+          ...wrapText,
         }}
       >
         {body}
@@ -234,20 +248,25 @@ const preStyle: React.CSSProperties = {
   borderRadius: 8,
   background: "#0d1117",
   border: `1px solid ${colors.border}`,
-  overflow: "auto",
+  overflowX: "auto",
+  maxWidth: "100%",
   fontSize: "0.8rem",
   lineHeight: 1.5,
   maxHeight: 280,
+  ...wrapText,
 };
 
 const inputStyle: React.CSSProperties = {
-  flex: 1,
-  minWidth: 220,
+  flex: "1 1 12rem",
+  minWidth: 0,
+  width: "100%",
+  maxWidth: "100%",
   padding: "0.625rem 0.875rem",
   borderRadius: 8,
   border: `1px solid ${colors.border}`,
   background: colors.surfaceAlt,
   color: colors.text,
+  boxSizing: "border-box",
 };
 
 const buttonStyle: React.CSSProperties = {

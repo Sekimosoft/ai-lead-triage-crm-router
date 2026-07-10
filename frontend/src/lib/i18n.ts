@@ -153,9 +153,8 @@ export const SAMPLE_INQUIRY_EN =
   "We are evaluating CRM tools and would like a product demo plus pricing for 80 seats this week.";
 
 export const SAMPLE_INQUIRY_JA =
-  "お世話になります。神戸物産株式会社の明智光秀と申します。" +
-  "テストデータを解析したのですが、どちらの部署に確認依頼を出せばよいでしょうか。" +
-  "ご確認のほど、よろしくお願いします。";
+  "当社は従業員25名の山田会計事務所です。月300件ほどの問い合わせを担当者が手作業で振り分けています。" +
+  "この業務を自動化したいのですが、概算費用を相談できますか？";
 
 export function getSampleInquiry(locale: Locale): string {
   return locale === "ja" ? SAMPLE_INQUIRY_JA : SAMPLE_INQUIRY_EN;

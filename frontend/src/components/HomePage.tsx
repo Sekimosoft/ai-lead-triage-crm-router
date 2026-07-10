@@ -50,7 +50,7 @@ export function HomePage() {
           </p>
         </header>
 
-        <div style={{ display: "grid", gap: "1.5rem" }}>
+        <div style={{ display: "grid", gap: "1.5rem", minWidth: 0, maxWidth: "100%" }}>
           <section style={layout.card}>
             <h2 style={{ margin: "0 0 1rem", fontSize: "1.125rem" }}>{t.sectionPasteInquiry}</h2>
             <InquiryForm

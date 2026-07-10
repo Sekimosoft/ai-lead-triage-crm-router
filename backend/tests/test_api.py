@@ -4,9 +4,8 @@ from httpx import ASGITransport, AsyncClient
 from app.main import app
 
 SAMPLE_JA = (
-    "お世話になります。神戸物産株式会社の明智光秀と申します。"
-    "テストデータを解析したのですが、どちらの部署に確認依頼を出せばよいでしょうか。"
-    "ご確認のほど、よろしくお願いします。"
+    "当社は従業員25名の山田会計事務所です。月300件ほどの問い合わせを担当者が手作業で振り分けています。"
+    "この業務を自動化したいのですが、概算費用を相談できますか？"
 )
 
 
@@ -56,7 +55,7 @@ async def test_analyze_japanese_mock(client):
     data = response.json()
     assert data["success"] is True
     result = data["result"]
-    assert result["company"] == "神戸物産株式会社"
+    assert result["company"] == "山田会計事務所"
     assert not any(issue["field"] == "company" for issue in data["validationIssues"])
     assert "ありがとう" in result["suggestedReply"]
 

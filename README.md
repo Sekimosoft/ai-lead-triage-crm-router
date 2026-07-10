@@ -4,7 +4,7 @@
 
 A portfolio demo by [Sekimosoft](https://sekimosoft.com) from the BizDXAI platform.
 
-**Status:** v1.1.1 — Public on GitHub, CI green, EN / JP UI; Live Demo on Render  
+**Status:** v1.1.2 — Public on GitHub, CI green, Live Demo Active  
 **Repository:** https://github.com/Sekimosoft/ai-lead-triage-crm-router  
 **Languages:** EN / JP toggle (default EN) — Mock Provider, no API key required
 
@@ -44,10 +44,11 @@ This demo shows a focused solution: **AI handles ambiguous interpretation; deter
 
 ## 3. Live demo
 
-> Live Demo URL will be added after deployment to Render (frontend + backend).  
-> The demo runs on **Mock Provider** by default — no OpenAI API key required.
+**URL:** https://ai-lead-triage-web.onrender.com
 
-**Run locally now:**
+The demo runs on **Mock Provider** by default — no OpenAI API key required.
+
+**Run locally:**
 
 ```bash
 cp .env.example .env

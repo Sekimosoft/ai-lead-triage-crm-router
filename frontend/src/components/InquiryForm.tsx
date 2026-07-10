@@ -120,6 +120,9 @@ const primaryButtonStyle: React.CSSProperties = {
   fontWeight: 600,
   cursor: "pointer",
   fontSize: "1rem",
+  width: "100%",
+  maxWidth: "100%",
+  boxSizing: "border-box",
 };
 
 const secondaryButtonStyle: React.CSSProperties = {

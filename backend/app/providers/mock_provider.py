@@ -13,6 +13,11 @@ from app.providers.base import AIProvider
 class MockProvider(AIProvider):
     """Keyword/heuristic stand-in so demos run without external API keys."""
 
+    # Occupation labels alone are not company names — reject after regex match.
+    _GENERIC_JA_COMPANY_LABELS = frozenset(
+        {"会計事務所", "税理士事務所", "法律事務所", "税理士法人"}
+    )
+
     @property
     def name(self) -> str:
         return "mock"
@@ -53,15 +58,15 @@ class MockProvider(AIProvider):
                 rf"({name_chars}{entity})",
                 # Prefix form: 株式会社神戸物産
                 rf"({entity}{name_chars})",
-                r"当社は従業員\d+名の([^。、\sの]{2,30})",
+                r"当社は従業員\d+名の([^。、\sので]{2,30}?)(?:です|[。、]|$)",
                 r"(?:会社名|企業名)[:：]?\s*([^\s。、]{2,40})",
             ]
             for pattern in patterns:
                 match = re.search(pattern, text)
                 if match:
-                    return self._clean_company_name(match.group(1))
-            if "会計事務所" in text:
-                return "会計事務所"
+                    company = self._clean_company_name(match.group(1))
+                    if company and company not in self._GENERIC_JA_COMPANY_LABELS:
+                        return company
             return None
 
         patterns = [

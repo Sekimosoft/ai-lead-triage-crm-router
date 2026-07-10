@@ -6,12 +6,11 @@ from app.providers.mock_provider import MockProvider
 from app.validation.rules import validate_inquiry_input, validate_triage_result
 
 SAMPLE_JA = (
-    "お世話になります。神戸物産株式会社の明智光秀と申します。"
-    "テストデータを解析したのですが、どちらの部署に確認依頼を出せばよいでしょうか。"
-    "ご確認のほど、よろしくお願いします。"
+    "当社は従業員25名の山田会計事務所です。月300件ほどの問い合わせを担当者が手作業で振り分けています。"
+    "この業務を自動化したいのですが、概算費用を相談できますか？"
 )
 
-SAMPLE_JA_ACCOUNTING = (
+SAMPLE_JA_GENERIC_OFFICE = (
     "当社は従業員25名の会計事務所です。月300件ほどの問い合わせを担当者が手作業で振り分けています。"
     "この業務を自動化したいのですが、概算費用を相談できますか？"
 )
@@ -37,7 +36,7 @@ async def test_mock_provider_extracts_company():
 async def test_mock_provider_japanese_official_sample_company():
     provider = MockProvider()
     result = await provider.analyze(SAMPLE_JA, locale="ja")
-    assert result.company == "神戸物産株式会社"
+    assert result.company == "山田会計事務所"
     issues = validate_triage_result(result, locale="ja")
     assert not any(issue.field == "company" for issue in issues)
 
@@ -57,10 +56,19 @@ async def test_mock_provider_japanese_entity_forms():
 
 
 @pytest.mark.asyncio
+async def test_mock_provider_rejects_generic_office_label():
+    provider = MockProvider()
+    result = await provider.analyze(SAMPLE_JA_GENERIC_OFFICE, locale="ja")
+    assert result.company == "不明な会社"
+    issues = validate_triage_result(result, locale="ja")
+    assert any(issue.field == "company" for issue in issues)
+
+
+@pytest.mark.asyncio
 async def test_mock_provider_japanese_accounting_pattern():
     provider = MockProvider()
-    result = await provider.analyze(SAMPLE_JA_ACCOUNTING, locale="ja")
-    assert result.company == "会計事務所"
+    result = await provider.analyze(SAMPLE_JA, locale="ja")
+    assert result.company == "山田会計事務所"
     assert result.category == Category.PRICING
 
 
@@ -68,9 +76,9 @@ async def test_mock_provider_japanese_accounting_pattern():
 async def test_mock_provider_japanese_output():
     provider = MockProvider()
     result = await provider.analyze(SAMPLE_JA, locale="ja")
-    assert result.category == Category.GENERAL
+    assert result.category == Category.PRICING
     assert "ありがとう" in result.suggestedReply
-    assert result.company == "神戸物産株式会社"
+    assert result.company == "山田会計事務所"
     assert len(result.recommendedAction) >= 10
 
 
